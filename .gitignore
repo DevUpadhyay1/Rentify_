@@ -1,0 +1,54 @@
+# === Python / Django ===
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+env/
+venv/
+ENV/
+env.bak/
+*.env
+db.sqlite3
+media/
+staticfiles/
+
+# === Django Migrations ===
+*/migrations/*.py
+*/migrations/*.pyc
+
+# === Secrets ===
+.env
+firebase_config.py
+credentials.json
+
+# === React (frontend) ===
+node_modules/
+build/
+dist/
+.env.local
+.env.development
+.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === macOS / Linux / Windows ===
+.DS_Store
+Thumbs.db
+
+# === VS Code ===
+.vscode/
+*.code-workspace
+
+# === Firebase ===
+.firebase/
+.firebaseproject
+.firebaserc
+
+# === Other ===
+*.bak
+*.swp
+.idea/
+*.iml
