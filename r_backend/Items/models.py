@@ -8,7 +8,8 @@ User = get_user_model()
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    icon = models.ImageField(upload_to='category_icons/', blank=True, null=True)
+    icon = models.URLField(blank=True, null=True)  # Storing Firebase/cloud URL
+    is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
