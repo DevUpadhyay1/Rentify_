@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders'
+    'corsheaders',
+    'Authentication',
+    'Items'
+    
 ]
 
 MIDDLEWARE = [
@@ -128,8 +131,27 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React dev server
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+AUTH_USER_MODEL = 'Authentication.CustomUser'
+
+# Email Configuration #
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'   
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'devupadhyay480@gmail.com'             
+EMAIL_HOST_PASSWORD = 'hhov iybd nfti goib'       
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
