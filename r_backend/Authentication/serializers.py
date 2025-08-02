@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import AccessToken,RefreshToken, TokenError
 from rest_framework import serializers
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import authenticate
@@ -138,3 +137,18 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'address', 'rating', 'total_ratings', 'date_joined'
         ]
         read_only_fields = ['email', 'rating', 'total_ratings', 'date_joined']
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = attrs['refresh']
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            token = RefreshToken(self.token)
+            token.blacklist()
+        except TokenError:
+            raise serializers.ValidationError("Invalid or expired token.")

@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 from .models import CustomUser
-from .serializers import RegisterSerializer, LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,UserProfileSerializer
+from .serializers import RegisterSerializer, LoginSerializer,ForgotPasswordSerializer,ResetPasswordSerializer,UserProfileSerializer, LogoutSerializer
 
 
 from django.contrib.auth import get_user_model
@@ -67,3 +67,13 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         return self.request.user
+
+class LogoutView(GenericAPIView):
+    serializer_class = LogoutSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_205_RESET_CONTENT)
+

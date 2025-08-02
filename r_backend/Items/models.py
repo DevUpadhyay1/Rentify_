@@ -6,9 +6,9 @@ User = get_user_model()
 
 # Create your models here.
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,unique=True)
     description = models.TextField(blank=True)
-    icon = models.URLField(blank=True, null=True)  # Storing Firebase/cloud URL
+    icon = models.URLField(max_length=500,blank=True, null=True)  # Storing Firebase/cloud URL
     is_approved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -17,6 +17,14 @@ class Category(models.Model):
     
     def __str__(self):
         return self.name
+    
+class SubCategory(models.Model):
+    title = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
+
+    def __str__(self):
+        return f"{self.title} ({self.category.title})"
+
 
 class Item(models.Model):   
     CONDITION_CHOICES = [
@@ -37,7 +45,7 @@ class Item(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_items')
     title = models.CharField(max_length=200)
     description = models.TextField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
     availability_status = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, default='available')
@@ -52,10 +60,11 @@ class Item(models.Model):
     
     def __str__(self):
         return self.title
+
     
 class ItemImage(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='items/')
+    image_url = models.URLField(blank=True, null=True)
     is_primary = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
