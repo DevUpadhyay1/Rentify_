@@ -19,11 +19,10 @@ class Category(models.Model):
         return self.name
     
 class SubCategory(models.Model):
-    title = models.CharField(max_length=100)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')
-
+    name = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="subcategories")
     def __str__(self):
-        return f"{self.title} ({self.category.title})"
+        return f"{self.name} ({self.category.name})"
 
 
 class Item(models.Model):   
@@ -43,8 +42,9 @@ class Item(models.Model):
     ]
     
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_items')
-    title = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     description = models.TextField()
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='items', null=True, blank=True)
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
@@ -70,17 +70,6 @@ class ItemImage(models.Model):
     
     def __str__(self):
         return f"{self.item.title} - Image"
-
-class ItemReview(models.Model):
-    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.IntegerField()  # 1 to 5
-    comment = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Review by {self.user.email} on {self.item.title}"
-
 
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

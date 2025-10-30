@@ -1,7 +1,7 @@
 # views.py
 from rest_framework import generics, filters, permissions
-from .models import Category, Item, ItemImage, ItemReview,Wishlist
-from .serializers import CategorySerializer, ItemSerializer, ItemImageSerializer, ItemReviewSerializer, WishlistSerializer
+from .models import Category, SubCategory,Item, ItemImage, Wishlist
+from .serializers import CategorySerializer, SubCategorySerializer, ItemSerializer, ItemImageSerializer, WishlistSerializer
 from rest_framework.pagination import PageNumberPagination
 
 # class StandardPagination(PageNumberPagination):
@@ -9,37 +9,42 @@ from rest_framework.pagination import PageNumberPagination
 #     page_size_query_param = 'page_size'
 
 
-
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'name']
-
 
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'name'
 
+class SubCategoryListCreateView(generics.ListCreateAPIView):
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['created_at', 'name']
+
+class SubCategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+    lookup_field = 'name'
 
 class ItemListCreateView(generics.ListCreateAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
-    # pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'price', 'name']
-
 
 class ItemRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
     lookup_field = 'name'
-
-
+    
 class ItemImageListCreateView(generics.ListCreateAPIView):
     queryset = ItemImage.objects.all()
     serializer_class = ItemImageSerializer
@@ -51,14 +56,6 @@ class ItemImageListCreateView(generics.ListCreateAPIView):
 class ItemImageRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ItemImage.objects.all()
     serializer_class = ItemImageSerializer
-
-class ItemReviewListCreateView(generics.ListCreateAPIView):
-    queryset = ItemReview.objects.all()
-    serializer_class = ItemReviewSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 class WishlistListCreateView(generics.ListCreateAPIView):
     queryset = Wishlist.objects.all()
