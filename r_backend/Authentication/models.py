@@ -28,7 +28,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     user_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=15, blank=True)
-    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_image = models.URLField(max_length=1000, blank=True, null=True)
     address = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -43,3 +43,27 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def update_rating(self):
+        from Review.models import OwnerReview, RenterReview
+        from django.db.models import Avg
+        
+        owner_reviews = OwnerReview.objects.filter(owner=self)
+        owner_avg = owner_reviews.aggregate(Avg('overall_rating'))['overall_rating__avg'] or 0
+        owner_count = owner_reviews.count()
+    
+        renter_reviews = RenterReview.objects.filter(renter=self)
+        renter_avg = renter_reviews.aggregate(Avg('overall_rating'))['overall_rating__avg'] or 0
+        renter_count = renter_reviews.count()
+    
+    # Calculate combined average
+        if owner_count + renter_count > 0:
+            total_rating = (owner_avg * owner_count) + (renter_avg * renter_count)
+            self.rating = round(total_rating / (owner_count + renter_count), 1)
+            self.total_ratings = owner_count + renter_count
+        else:
+            self.rating = 0
+            self.total_ratings = 0
+    
+        self.save(update_fields=['rating', 'total_ratings'])
+

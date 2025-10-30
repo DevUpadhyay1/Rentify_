@@ -10,13 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(_file_).resolve().parent.parent
+# REACT_BUILD_DIR = BASE_DIR.parent / "r_frontend" / "dist"
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,19 +48,20 @@ INSTALLED_APPS = [
     'Authentication',
     'Items',
     'Review',
-    'Rental'
-
+    'Rental',
+    'billing',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-     'corsheaders.middleware.CorsMiddleware',
+     
 ]
 
 ROOT_URLCONF = 'Rentify.urls'
@@ -66,7 +69,9 @@ ROOT_URLCONF = 'Rentify.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+
+        ], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,9 +134,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
-STATIC_URL = 'static/'
-
+STATIC_URL = "/static/"
+# STATICFILES_DIRS = [
+#     REACT_BUILD_DIR,       
+#     REACT_BUILD_DIR / "assets" 
+# ]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -140,11 +147,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React dev server
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -153,7 +165,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 AUTH_USER_MODEL = 'Authentication.CustomUser'
 
-# EMAIL CONFIGURATION 
+# URL of your React frontend - used in email links
+FRONTEND_URL = 'http://localhost:5173'
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST')
@@ -163,7 +177,9 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-# FIREBASE CONFIGURATION 
+ADMINS = [
+    ('Admin', config('EMAIL_HOST_USER')),  # Sends admin notifications to your email
+]
 
 FIREBASE_CONFIG = {
     "apiKey": config('FIREBASE_API_KEY'),
@@ -177,12 +193,12 @@ FIREBASE_CONFIG = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # Token valid for 1 day
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),  # Refresh token valid for 10 days
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),  
 
-    'ROTATE_REFRESH_TOKENS': True,  # Optional: issues new refresh token when rotated
-    'BLACKLIST_AFTER_ROTATION': True,  # Old refresh token is blacklisted after rotation
-    'UPDATE_LAST_LOGIN': False,  # Set True if you want to update last_login on token issue
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,  
+    'UPDATE_LAST_LOGIN': False,
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
@@ -195,9 +211,15 @@ SIMPLE_JWT = {
 
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 
-    'JTI_CLAIM': 'jti',  # Unique identifier for tokens
+    'JTI_CLAIM': 'jti',
 
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET')
+
+BILLING_TAX_RATE = 0.18  # 18% GST
+BILLING_SERVICE_FEE_RATE = 0.05  # 5% platform fee

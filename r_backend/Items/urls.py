@@ -1,22 +1,49 @@
 from django.urls import path
-from . import views
+from .views import (
+    # Categories
+    CategoryListCreateView,
+    CategoryRetrieveUpdateDestroyView,
+    # Subcategories
+    SubCategoryListCreateView,
+    SubCategoryRetrieveUpdateDestroyView,
+    # Items
+    ItemListCreateView,
+    ItemRetrieveUpdateDestroyView,
+    MyItemsListView,
+    # Item Images
+    ItemImageListCreateView,
+    ItemImageRetrieveUpdateDestroyView,
+    # Wishlist
+    WishlistListCreateView,
+    WishlistRetrieveUpdateDestroyView,
+    # Locations
+    available_cities,
+    search_locations,
+)
 
 urlpatterns = [
+    # Location endpoints
+    path('locations/available-cities/', available_cities, name='available-cities'),
+    path('locations/search/', search_locations, name='search-locations'),
     
-    path('categories/', views.CategoryListCreateView.as_view(), name='category-list-create'),
-    path('categories/<str:name>/', views.CategoryRetrieveUpdateDestroyView.as_view(), name='category-detail'),
-
-   
-    path('subcategories/', views.SubCategoryListCreateView.as_view(), name='subcategory-list-create'),
-    path('subcategories/<int:pk>/', views.SubCategoryRetrieveUpdateDestroyView.as_view(), name='subcategory-detail'),
-
+    # Category endpoints
+    path('categories/', CategoryListCreateView.as_view(), name='category-list-create'),
+    path('categories/<int:pk>/', CategoryRetrieveUpdateDestroyView.as_view(), name='category-detail'),
     
-    path('items/', views.ItemListCreateView.as_view(), name='item-list-create'),
-    path('items/<str:name>/', views.ItemRetrieveUpdateDestroyView.as_view(), name='item-detail'),
-
+    # Subcategory endpoints
+    path('subcategories/', SubCategoryListCreateView.as_view(), name='subcategory-list-create'),
+    path('subcategories/<int:pk>/', SubCategoryRetrieveUpdateDestroyView.as_view(), name='subcategory-detail'),
     
-    path('item-images/', views.ItemImageListCreateView.as_view(), name='item-image-list-create'),
-    path('item-images/<int:pk>/', views.ItemImageRetrieveUpdateDestroyView.as_view(), name='item-image-detail'),
-  
-    path('wishlists/', views.WishlistListCreateView.as_view(), name='wishlist-list-create'),
+    # Item endpoints
+    path('items/', ItemListCreateView.as_view(), name='item-list-create'),
+    path('items/<int:pk>/', ItemRetrieveUpdateDestroyView.as_view(), name='item-detail'),
+    path('my-items/', MyItemsListView.as_view(), name='my-items'),
+    
+    # Item Image endpoints
+    path('item-images/', ItemImageListCreateView.as_view(), name='itemimage-list-create'),
+    path('item-images/<int:pk>/', ItemImageRetrieveUpdateDestroyView.as_view(), name='itemimage-detail'),
+    
+    # Wishlist endpoints
+    path('wishlists/', WishlistListCreateView.as_view(), name='wishlist-list-create'),
+    path('wishlists/<int:pk>/', WishlistRetrieveUpdateDestroyView.as_view(), name='wishlist-detail'),
 ]

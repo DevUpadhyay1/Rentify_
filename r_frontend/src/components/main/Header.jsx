@@ -1,285 +1,401 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, User, Home, Plus, Search, Bell, Heart, MapPin } from 'lucide-react';
-// Note: Import axios in your actual project: import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  LogIn,
+  PlusCircle,
+  User,
+  Menu,
+  X,
+  Star,
+  MessageSquare,
+  Loader2,
+} from "lucide-react";
+import UserDropdown from "../common/UserDropdown";
+import axios from "axios";
 
-const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This will be managed by your auth state
-  const [user, setUser] = useState(null); // User data from backend
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState([]);
-  const [notifications, setNotifications] = useState(3); // Mock notification count
+const API_BASE_URL = "http://127.0.0.1:8000";
 
-  // Example of how you would fetch user data from backend
-  useEffect(() => {
-    // const fetchUserData = async () => {
-    //   try {
-    //     const response = await axios.get('/api/user/profile', {
-    //       headers: {
-    //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-    //       }
-    //     });
-    //     setUser(response.data);
-    //     setIsLoggedIn(true);
-    //   } catch (error) {
-    //     setIsLoggedIn(false);
-    //   }
-    // };
-    
-    // Check if user is logged in (replace with your actual auth logic)
-    // fetchUserData();
-    
-    // Mock login state for demo (remove this in production)
-    setIsLoggedIn(false); // Change to true to see logged in state
-    
-    // Mock search suggestions
-    setSearchSuggestions([
-      'Electronics', 'Furniture', 'Cars', 'Tools', 'Books', 'Gaming'
-    ]);
-  }, []);
+function Header() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState(0);
 
-  // Handle search functionality
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    // Here you would typically make an API call to get search suggestions
-    // const fetchSuggestions = async () => {
-    //   try {
-    //     const response = await axios.get(`/api/search/suggestions?q=${e.target.value}`);
-    //     setSearchSuggestions(response.data);
-    //   } catch (error) {
-    //     console.error('Error fetching suggestions:', error);
-    //   }
-    // };
+  const menu = [
+    { name: "Home", to: "/" },
+    { name: "Products", to: "/products" },
+    { name: "About", to: "/about" },
+    { name: "Contact", to: "/contact" },
+  ];
+
+  // Clear all user session data
+  const clearUserSession = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_email");
+    localStorage.removeItem("user_name");
+    localStorage.removeItem("profile_image");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("refresh");
+    setUser(null);
+    setPendingReviewsCount(0);
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      console.log('Searching for:', searchQuery);
-      // Here you would navigate to search results page
-      // navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  // Verify token is still valid
+  const verifyToken = async (token) => {
+    try {
+      await axios.get(`${API_BASE_URL}/api/auth/user/profile/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return true;
+    } catch (error) {
+      // Token is invalid or expired
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log("Token expired or invalid - clearing session");
+        clearUserSession();
+        return false;
+      }
+      // Network error - keep existing session
+      return true;
     }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  // Fetch pending reviews count
+  const fetchPendingReviewsCount = async (token) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/reviews/pending/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setPendingReviewsCount(response.data.length || 0);
+    } catch (error) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        // Token expired during this request
+        clearUserSession();
+      }
+      setPendingReviewsCount(0);
+    }
   };
 
-  const handleLogin = () => {
-    // Handle login logic or redirect to login page
-    console.log('Login clicked');
-  };
+  useEffect(() => {
+    const checkAuth = async () => {
+      setLoading(true); // ✅ Start loading
+      const token = localStorage.getItem("token");
+      const userEmail = localStorage.getItem("user_email");
+      const userName = localStorage.getItem("user_name");
+      const avatar = localStorage.getItem("profile_image");
 
-  const handleRegister = () => {
-    // Handle register logic or redirect to register page
-    console.log('Register clicked');
-  };
+      if (token && userEmail) {
+        // Verify token is still valid
+        const isValid = await verifyToken(token);
+        if (isValid) {
+          setUser({ email: userEmail, name: userName, avatar });
+          // Fetch pending reviews count
+          await fetchPendingReviewsCount(token);
+        } else {
+          // Token invalid - user session already cleared
+          // Redirect to login if on protected route
+          const protectedRoutes = [
+            "/profile",
+            "/items/add",
+            "/my-rentals",
+            "/orders",
+            "/reviews",
+          ];
+          if (
+            protectedRoutes.some((route) => location.pathname.startsWith(route))
+          ) {
+            navigate("/login", { replace: true });
+          }
+        }
+      } else {
+        // No token found - ensure everything is cleared
+        setUser(null);
+        setPendingReviewsCount(0);
+      }
 
-  const handleProfile = () => {
-    // Handle profile navigation
-    console.log('Profile clicked');
-  };
+      setLoading(false); // ✅ End loading
+    };
 
-  const handleRentItem = () => {
-    // Handle rent item navigation
-    console.log('Rent Item clicked');
-  };
+    checkAuth();
+  }, [location.pathname, navigate]);
+
+  // Global axios interceptor for token expiration
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log("Global interceptor: Token expired - clearing session");
+          clearUserSession();
+
+          // Redirect to login if on protected route
+          const protectedRoutes = [
+            "/profile",
+            "/items/add",
+            "/my-rentals",
+            "/orders",
+            "/reviews",
+          ];
+          if (
+            protectedRoutes.some((route) =>
+              window.location.pathname.startsWith(route)
+            )
+          ) {
+            navigate("/login", { replace: true });
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [navigate]);
 
   return (
-    <header className="bg-white/95 backdrop-blur-md shadow-xl border-b border-gray-200/50 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-18 py-2">
-          {/* Logo and App Name */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 group cursor-pointer">
-              {/* App Logo with animation */}
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                <Home className="w-7 h-7 text-white group-hover:rotate-12 transition-transform duration-300" />
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          {/* Logo & Brand */}
+          <Link to="/" className="flex items-center gap-3 group relative z-10">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
+              <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/609/609803.png"
+                  alt="Rentify Logo"
+                  className="w-7 h-7 brightness-0 invert"
+                />
               </div>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Rentify
-              </h1>
-              <div className="flex items-center space-x-1">
-                <MapPin className="w-3 h-3 text-gray-400" />
-                <span className="text-xs text-gray-500">Rent Made Easy</span>
-              </div>
+              </span>
+              <span className="text-xs text-gray-500 font-medium -mt-1">
+                Rent Smarter
+              </span>
             </div>
-          </div>
-
-          {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative">
-            <form onSubmit={handleSearchSubmit} className="w-full relative">
-              <div className={`relative transition-all duration-300 ${isSearchFocused ? 'transform scale-105' : ''}`}>
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                  placeholder="Search for items to rent..."
-                  className="w-full pl-12 pr-6 py-3 bg-gray-50 border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-300 text-gray-700 placeholder-gray-400"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <kbd className="hidden sm:inline-block px-2 py-1 text-xs text-gray-500 bg-gray-200 rounded border">⌘K</kbd>
-                </div>
-              </div>
-              
-              {/* Search Suggestions */}
-              {isSearchFocused && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-50">
-                  <div className="px-4 py-2 text-xs text-gray-500 font-medium uppercase tracking-wider">Popular Categories</div>
-                  {searchSuggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSearchQuery(suggestion)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 transition-colors duration-150"
-                    >
-                      <Search className="w-4 h-4 text-gray-400 inline mr-3" />
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </form>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Rent Item Button */}
-            <button
-              onClick={handleRentItem}
-              className="flex items-center space-x-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <Plus className="w-4 h-4 relative z-10 group-hover:rotate-90 transition-transform duration-300" />
-              <span className="relative z-10">List Item</span>
-            </button>
+          <nav className="hidden lg:flex items-center gap-1">
+            {menu.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200
+                  ${
+                    location.pathname === item.to
+                      ? "text-blue-600"
+                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                  }`}
+              >
+                {item.name}
+                {location.pathname === item.to && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></span>
+                )}
+              </Link>
+            ))}
+          </nav>
 
-            {/* Authentication Buttons */}
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-3">
-                {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
-                  <Bell className="w-5 h-5" />
-                  {notifications > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
-                      {notifications}
-                    </span>
-                  )}
-                </button>
-
-                {/* Favorites */}
-                <button className="p-2 text-gray-600 hover:text-red-500 transition-colors duration-200 hover:bg-gray-50 rounded-lg">
-                  <Heart className="w-5 h-5" />
-                </button>
-
-                {/* Profile */}
-                <button
-                  onClick={handleProfile}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 bg-gray-50 hover:bg-blue-50 px-3 py-2 rounded-xl"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
-                  <span>Profile</span>
-                </button>
+          {/* Auth & Actions */}
+          <div className="flex items-center gap-3">
+            {/* ✅ Show loading state */}
+            {loading ? (
+              <div className="hidden lg:flex items-center gap-2 px-4 py-2 text-gray-600">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span className="text-sm font-medium">Loading...</span>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleLogin}
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 px-6 py-2 rounded-xl hover:bg-gray-50 relative overflow-hidden group"
-                >
-                  <span className="relative z-10">Login</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-                <button
-                  onClick={handleRegister}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-2 border-transparent px-6 py-2 rounded-xl font-medium hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 relative overflow-hidden group"
-                >
-                  <span className="relative z-10">Register</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-              </div>
-            )}
-          </div>
+              <>
+                {/* User Actions - Desktop */}
+                {user && (
+                  <>
+                    {/* Pending Reviews Badge */}
+                    <Link
+                      to="/reviews/pending"
+                      className="hidden lg:flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all relative"
+                      title="Pending Reviews"
+                    >
+                      <Star size={20} />
+                      {pendingReviewsCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                          {pendingReviewsCount}
+                        </span>
+                      )}
+                    </Link>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+                    {/* My Reviews Link */}
+                    <Link
+                      to="/reviews"
+                      className="hidden lg:flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                      title="My Reviews"
+                    >
+                      <MessageSquare size={20} />
+                    </Link>
+
+                    {/* Add Item Button */}
+                    <button
+                      onClick={() => navigate("/items/add")}
+                      className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+                      title="List your product for rent"
+                    >
+                      <PlusCircle size={18} />
+                      <span>Add Item</span>
+                    </button>
+                  </>
+                )}
+
+                {user ? (
+                  // User Dropdown
+                  <div className="hidden lg:block">
+                    <UserDropdown
+                      userEmail={user.email}
+                      userName={user.name}
+                      avatar={user.avatar}
+                      onLogout={clearUserSession}
+                    />
+                  </div>
+                ) : (
+                  // Login Button - Desktop
+                  <Link
+                    to="/login"
+                    className="hidden lg:flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-lg"
+                    title="Login or create account"
+                  >
+                    <LogIn size={18} />
+                    <span>Sign In</span>
+                  </Link>
+                )}
+              </>
+            )}
+
+            {/* Mobile Menu Button */}
             <button
-              onClick={toggleMenu}
-              className="text-gray-700 hover:text-blue-600 transition-colors duration-200 p-2 hover:bg-gray-50 rounded-lg"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Toggle menu"
             >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? (
+                <X size={24} className="text-gray-700" />
+              ) : (
+                <Menu size={24} className="text-gray-700" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Search Bar */}
-        <div className="md:hidden pb-4">
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search for items..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white transition-all duration-300"
-            />
-          </form>
-        </div>
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 py-4">
+            <nav className="flex flex-col gap-2 mb-4">
+              {menu.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200
+                    ${
+                      location.pathname === item.to
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
 
-        {/* Mobile Navigation Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-md">
-            <div className="px-4 py-6 space-y-4">
-              {/* Rent Item Button */}
-              <button
-                onClick={handleRentItem}
-                className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-4 py-4 rounded-xl font-medium hover:shadow-lg transition-all duration-200"
-              >
-                <Plus className="w-5 h-5" />
-                <span>List Item</span>
-              </button>
-
-              {/* Authentication Buttons */}
-              {isLoggedIn ? (
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-3 bg-gray-50 rounded-xl">
-                    <Bell className="w-5 h-5" />
-                    <span>Notifications ({notifications})</span>
-                  </button>
-                  <button className="w-full flex items-center justify-center space-x-2 text-gray-700 hover:text-red-500 font-medium transition-colors duration-200 py-3 bg-gray-50 rounded-xl">
-                    <Heart className="w-5 h-5" />
-                    <span>Favorites</span>
-                  </button>
-                  <button
-                    onClick={handleProfile}
-                    className="w-full flex items-center justify-center space-x-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-3 bg-gray-50 rounded-xl"
-                  >
-                    <User className="w-5 h-5" />
-                    <span>Profile</span>
-                  </button>
+            {/* Mobile Auth Actions */}
+            <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
+              {/* ✅ Show loading state for mobile */}
+              {loading ? (
+                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 rounded-xl text-gray-600">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm font-medium">Loading...</span>
                 </div>
+              ) : user ? (
+                <>
+                  {/* Review Links - Mobile */}
+                  <Link
+                    to="/reviews/pending"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star size={18} className="text-gray-700" />
+                      <span className="text-sm font-semibold text-gray-700">
+                        Pending Reviews
+                      </span>
+                    </div>
+                    {pendingReviewsCount > 0 && (
+                      <span className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                        {pendingReviewsCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <Link
+                    to="/reviews/my-reviews"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <MessageSquare size={18} className="text-gray-700" />
+                    <span className="text-sm font-semibold text-gray-700">
+                      My Reviews
+                    </span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      navigate("/items/add");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-md"
+                  >
+                    <PlusCircle size={18} />
+                    <span>Add Item</span>
+                  </button>
+                  <div className="px-4 py-3 bg-gray-50 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-10 h-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User size={20} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {user.name || "User"}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : (
-                <div className="space-y-3">
-                  <button
-                    onClick={handleLogin}
-                    className="w-full text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200 py-4 border-2 border-gray-200 rounded-xl hover:bg-gray-50"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={handleRegister}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 rounded-xl font-medium hover:shadow-lg transition-all duration-200"
-                  >
-                    Register
-                  </button>
-                </div>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 text-white font-semibold rounded-xl shadow-md"
+                >
+                  <LogIn size={18} />
+                  <span>Sign In</span>
+                </Link>
               )}
             </div>
           </div>
@@ -287,6 +403,6 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
 export default Header;

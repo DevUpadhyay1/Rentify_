@@ -28,7 +28,7 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = [
         'name', 'owner', 'category', 'subcategory', 'price_per_day', 'condition',
         'availability_status', 'location', 'deposit_required',
-        'minimum_rental_days', 'maximum_rental_days', 'rating', 'total_ratings',
+        'minimum_rental_days', 'maximum_rental_days', 'rating', 'total_ratings','is_available',
         'created_at', 'updated_at'
     ]
     search_fields = ['name', 'owner__username', 'category__name', 'subcategory__name']

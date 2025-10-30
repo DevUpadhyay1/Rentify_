@@ -1,0 +1,356 @@
+Q1. Define a network and explain its importance in real-world systems. [5 Marks]
+
+Definition:
+A network is a structure that represents a set of entities (called nodes or vertices) and the relationships or connections (called edges or links) among them.
+It is usually represented mathematically as G = (V, E), where
+
+V → set of nodes (entities),
+
+E → set of edges (relationships).
+
+Explanation:
+Networks help us model and analyze complex relationships between objects — whether people, computers, cities, or biological systems. By studying the patterns of connections, we can understand how information, influence, or resources flow in the system.
+
+Importance in real-world systems:
+
+Social Media: Understanding how users interact on platforms like Facebook or Twitter.
+
+Computer Networks: Representing data transfer between servers, routers, and clients.
+
+Transportation Systems: Modeling roads, flights, or railway connections between cities.
+
+Biological Networks: Understanding protein interactions or neural connections.
+
+Business and Economics: Analyzing trade networks or supply chain dependencies.
+
+In short:
+Networks are vital because they help us visualize, measure, and optimize relationships in almost every domain of life and technology.
+
+Q2. Differentiate between a graph and a network with suitable examples. [5 Marks]
+Aspect	Graph	Network
+Definition	A graph is a mathematical structure consisting of a set of nodes connected by edges.	A network is a graph with additional meaning — nodes and edges represent real-world entities and relationships.
+Focus	Abstract mathematical relationships.	Real-world interpretation and data associated with connections.
+Components	Only vertices and edges.	Vertices, edges, and often weights, directions, or attributes.
+Example 1	A graph of 5 nodes connected randomly.	A social network where people (nodes) are connected by friendships (edges).
+Example 2	A simple undirected graph showing node connections.	A transportation network where cities (nodes) are connected by roads with distances (weighted edges).
+
+Summary:
+Every network is a graph, but not every graph is a network.
+Graphs provide the mathematical foundation, while networks give real-world meaning to those graphs.
+
+Q3. Explain the major components of a network: nodes and edges. [5 Marks]
+
+1. Nodes (Vertices):
+
+Nodes are the basic entities or points in a network.
+
+Each node represents an actor or object, such as a person, organization, city, or computer.
+
+In social media, a node may represent a user; in a road network, a city; in biology, a gene or protein.
+
+Nodes can have attributes, like name, age, location, or type.
+
+2. Edges (Links):
+
+Edges are the connections or relationships between nodes.
+
+They show how nodes interact or are related.
+
+Edges can be:
+
+Directed: A → B (e.g., one user follows another on Twitter).
+
+Undirected: A ↔ B (e.g., mutual friendship on Facebook).
+
+They may also have weights to represent strength, distance, or frequency of interaction.
+
+Example:
+In a friendship network:
+
+Each person = node.
+
+Friendship between two people = edge.
+
+If person A is friends with person B → edge (A, B).
+
+Diagram (conceptually):
+
+[A] ---- [B] ---- [C]
+
+
+Here, A, B, and C are nodes, and the lines between them are edges.
+
+Q4. Explain how centrality measures help in understanding real-world networks. [5 Marks]
+
+Answer:
+Centrality measures help identify important or influential nodes in a network based on their position and connections. They provide insights into power, communication flow, and influence within real-world systems.
+
+Types and Uses:
+
+Degree Centrality: Identifies active or popular nodes (e.g., most followed user on Twitter).
+
+Closeness Centrality: Finds nodes that can quickly reach others (useful in communication networks).
+
+Betweenness Centrality: Detects nodes acting as bridges between communities (e.g., brokers).
+
+Eigenvector/PageRank Centrality: Finds influential nodes connected to other important nodes (e.g., top websites).
+
+In short:
+Centrality helps locate key influencers, information spreaders, or connectors in networks like social media, business, and communication systems.
+
+Q5. Describe how network measures can be used in social network analysis. [5 Marks]
+
+Answer:
+Network measures quantify structural properties of a social network and reveal how individuals interact.
+
+Key Measures:
+
+Degree: Measures activity or popularity of a person.
+
+Closeness: Indicates how quickly a person can reach others.
+
+Betweenness: Highlights people bridging different groups.
+
+Density: Shows how closely knit the network is.
+
+Clustering Coefficient: Reflects tendency of people’s friends to also be friends.
+
+Use:
+These measures help understand influence, information flow, community strength, and network cohesion in real-world social systems like Facebook, LinkedIn, or company teams.
+
+Q6. What is clustering coefficient? Explain its role in network structure analysis. [5 Marks]
+
+Answer:
+The clustering coefficient measures the degree to which nodes in a network tend to cluster together — i.e., how likely a node’s neighbors are also connected to each other.
+
+Formula:
+
+𝐶
+(
+𝑣
+)
+=
+2
+𝐸
+𝑣
+𝑘
+𝑣
+(
+𝑘
+𝑣
+−
+1
+)
+C(v)=
+k
+v
+	​
+
+(k
+v
+	​
+
+−1)
+2E
+v
+	​
+
+	​
+
+
+where 
+𝐸
+𝑣
+E
+v
+	​
+
+ = number of links among neighbors of node v,
+
+𝑘
+𝑣
+k
+v
+	​
+
+ = degree of node v.
+
+Role in Structure Analysis:
+
+High clustering → tightly connected communities (social networks).
+
+Low clustering → sparse or random connections (technological networks).
+It helps in identifying local group formation, community structure, and social cohesion.
+
+Example:
+In a friend group where everyone knows everyone else → high clustering coefficient.
+
+Q7. Differentiate between small-world and scale-free networks. [5 Marks]
+Feature	Small-World Network	Scale-Free Network
+Definition	Networks with high clustering and short average path lengths.	Networks where few nodes (hubs) have many connections while most have few.
+Degree Distribution	Approximately uniform.	Follows power-law distribution.
+Examples	Watts–Strogatz model, social networks.	Internet, citation networks, airline routes.
+Characteristics	"Six degrees of separation" effect (everyone connected through few steps).	Presence of influential hubs.
+Applications	Modeling social and biological systems.	Modeling web links and communication systems.
+
+Summary:
+Small-world = local clusters + short paths.
+Scale-free = few super-connected hubs dominating the network.
+
+Q8. Discuss the impact of randomness and preferential attachment in network formation. [5 Marks]
+
+Answer:
+Networks grow based on how new nodes attach to existing ones. Two main mechanisms are:
+
+Randomness:
+
+Nodes connect randomly.
+
+Leads to Erdős–Rényi random networks.
+
+Produces uniform degree distribution and low clustering.
+
+Example: Randomly connecting computers.
+
+Preferential Attachment:
+
+New nodes prefer to connect to already well-connected nodes (“rich get richer”).
+
+Produces scale-free networks with hubs.
+
+High clustering and small path length.
+
+Example: Popular websites attract more links.
+
+Impact:
+Randomness → uniform, less structured networks.
+Preferential attachment → hierarchical, hub-dominated structures as seen in real-world systems.
+
+Q9. Describe the main assumptions of random and preferential attachment models. [5 Marks]
+Aspect	Random Network Model (Erdős–Rényi)	Preferential Attachment Model (Barabási–Albert)
+Connection Rule	Edges are added randomly between nodes.	New nodes connect preferentially to high-degree nodes.
+Assumptions	1. Each pair of nodes has equal chance to connect.
+2. No preference or hierarchy.	1. Network grows over time.
+2. Probability of connecting depends on degree (popularity).
+Degree Distribution	Binomial/Poisson.	Power-law (few hubs, many small nodes).
+Clustering	Low.	High.
+Example	Random friendships.	Social media following (celebrities get more followers).
+
+In short:
+Random model → equal chance connections.
+Preferential model → popularity-based connections.
+
+Q10. Explain the working principle of the PageRank algorithm. [5 Marks]
+
+Answer:
+PageRank evaluates the importance of a node based on the number and quality of incoming links.
+It was originally used by Google to rank webpages.
+
+Working Principle:
+
+Each page starts with equal rank.
+
+A page’s importance increases when important pages link to it.
+
+Rank is divided equally among outgoing links.
+
+The process repeats until ranks stabilize (convergence).
+
+Formula:
+
+𝑃
+𝑅
+(
+𝐴
+)
+=
+(
+1
+−
+𝑑
+)
++
+𝑑
+∑
+𝑖
+=
+1
+𝑛
+𝑃
+𝑅
+(
+𝑇
+𝑖
+)
+𝐶
+(
+𝑇
+𝑖
+)
+PR(A)=(1−d)+d
+i=1
+∑
+n
+	​
+
+C(T
+i
+	​
+
+)
+PR(T
+i
+	​
+
+)
+	​
+
+
+where
+
+𝑑
+d = damping factor (usually 0.85),
+
+𝑇
+𝑖
+T
+i
+	​
+
+ = pages linking to A,
+
+𝐶
+(
+𝑇
+𝑖
+)
+C(T
+i
+	​
+
+) = number of outgoing links from 
+𝑇
+𝑖
+T
+i
+	​
+
+.
+
+Example:
+If popular sites link to your website, your PageRank increases.
+
+Q11. Compare the PageRank and HITS algorithms. [5 Marks]
+Aspect	PageRank	HITS (Hyperlink-Induced Topic Search)
+Invented by	Larry Page & Sergey Brin (Google).	Jon Kleinberg (IBM Research).
+Idea	A page is important if it is linked by other important pages.	A page can be a good hub or a good authority.
+Scores Given	One score (PageRank value).	Two scores: Hub and Authority.
+Computation	Based on probability of random surfer visiting a page.	Based on mutual reinforcement between hubs and authorities.
+Use Case	Global importance ranking (web search).	Topic-specific ranking (query-based).
+Example	Google’s search ranking.	Identifying top topic pages and directories.
+
+Summary:
+
+PageRank → Global measure of importance.
+
+HITS → Topic-based hub and authority identification.
